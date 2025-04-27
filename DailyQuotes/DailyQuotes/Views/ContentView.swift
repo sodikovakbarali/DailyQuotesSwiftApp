@@ -16,7 +16,8 @@ struct ContentView: View {
                         AnimatedQuoteCard(
                             quote: viewModel.quotes[viewModel.currentIndex],
                             theme: viewModel.currentTheme,
-                            animationMode: viewModel.animationMode
+                            animationMode: viewModel.animationMode,
+                            speechViewModel: viewModel.speechViewModel
                         )
                         // Используем сам индекс для идентификации вместо ID цитаты
                         .id("quote-\(viewModel.currentIndex)")
@@ -37,6 +38,36 @@ struct ContentView: View {
                                     }
                                 }
                         }
+                        
+                        // Элементы управления для озвучивания
+                        HStack(spacing: 10) {
+                            Button(action: {
+                                if viewModel.speechViewModel.isSpeaking {
+                                    viewModel.stopSpeaking()
+                                } else {
+                                    viewModel.speakCurrentQuote()
+                                }
+                            }) {
+                                Image(systemName: viewModel.speechViewModel.isSpeaking ? "stop.fill" : "play.fill")
+                                    .foregroundColor(.white)
+                                    .padding(12)
+                                    .background(viewModel.currentTheme.primaryColorValue)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 3)
+                            }
+                            
+                            Button(action: {
+                                viewModel.showVoiceSelector = true
+                            }) {
+                                Image(systemName: "person.wave.2.fill")
+                                    .foregroundColor(.white)
+                                    .padding(12)
+                                    .background(viewModel.currentTheme.primaryColorValue.opacity(0.8))
+                                    .clipShape(Circle())
+                                    .shadow(radius: 3)
+                            }
+                        }
+                        .padding(.top, 10)
                         
                         // Элементы управления
                         HStack(spacing: 20) {
@@ -124,11 +155,18 @@ struct ContentView: View {
             .sheet(isPresented: $viewModel.showThemeSelector) {
                 ThemeSelectorView(viewModel: viewModel)
             }
+            .sheet(isPresented: $viewModel.showVoiceSelector) {
+                VoiceSelectionView(speechViewModel: viewModel.speechViewModel)
+            }
             .onAppear {
                 // If the quotes are not loaded at the first launch, reload them
                 if viewModel.quotes.isEmpty {
                     viewModel.loadQuotes()
                 }
+            }
+            .onDisappear {
+                // Останавливаем озвучивание при закрытии экрана
+                viewModel.stopSpeaking()
             }
         }
     }

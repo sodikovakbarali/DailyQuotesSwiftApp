@@ -4,15 +4,17 @@ struct AnimatedQuoteCard: View {
     let quote: Quote
     let theme: Theme
     let animationMode: QuoteViewModel.AnimationMode
+    let speechViewModel: SpeechViewModel
     @State private var isAnimating = false
     
     // ID для отслеживания изменения цитаты
     private let id = UUID()
     
-    init(quote: Quote, theme: Theme, animationMode: QuoteViewModel.AnimationMode) {
+    init(quote: Quote, theme: Theme, animationMode: QuoteViewModel.AnimationMode, speechViewModel: SpeechViewModel) {
         self.quote = quote
         self.theme = theme
         self.animationMode = animationMode
+        self.speechViewModel = speechViewModel
     }
     
     var body: some View {
@@ -28,6 +30,22 @@ struct AnimatedQuoteCard: View {
                 .font(.subheadline)
                 .foregroundColor(theme.textColorValue.opacity(0.8))
                 .padding(.top, 5)
+            
+            // Добавляем AudioWaveView когда цитата озвучивается
+            if speechViewModel.isSpeaking {
+                AudioWaveView(
+                    audioLevel: Binding<CGFloat>(
+                        get: { speechViewModel.audioLevel },
+                        set: { speechViewModel.audioLevel = $0 }
+                    ),
+                    barCount: 12,
+                    spacing: 4,
+                    color: theme.primaryColorValue
+                )
+                .frame(height: 40)
+                .padding(.top, 15)
+                .transition(.opacity)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding()
@@ -66,6 +84,7 @@ struct AnimatedQuoteCard: View {
                 isAnimating = true
             }
         }
+        .animation(.spring(), value: speechViewModel.isSpeaking)
     }
 }
 
@@ -108,13 +127,15 @@ struct AnimatedQuoteCard_Previews: PreviewProvider {
             AnimatedQuoteCard(
                 quote: Quote(text: "The best way to get started is to quit talking and begin doing.", author: "Walt Disney"),
                 theme: Theme.presets[0],
-                animationMode: .fade
+                animationMode: .fade,
+                speechViewModel: SpeechViewModel()
             )
             
             AnimatedQuoteCard(
                 quote: Quote(text: "Success is not in what you have, but who you are.", author: "Bo Bennett"),
                 theme: Theme.presets[2],
-                animationMode: .slide
+                animationMode: .slide,
+                speechViewModel: SpeechViewModel()
             )
         }
     }

@@ -40,6 +40,45 @@ struct ThemeSelectorView: View {
                     }
                     .padding(.vertical)
                     
+                    Divider()
+                    
+                    // Голосовые настройки
+                    VStack(alignment: .leading) {
+                        Text("Voice Settings")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        Button(action: {
+                            // Закрываем текущее окно
+                            presentationMode.wrappedValue.dismiss()
+                            // Небольшая задержка перед открытием нового окна
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                viewModel.showVoiceSelector = true
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "person.wave.2.fill")
+                                    .font(.title2)
+                                
+                                Text("Choose Voice")
+                                    .font(.body)
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.gray.opacity(0.1))
+                            )
+                            .padding(.horizontal)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.vertical)
+                    
                     // Предпросмотр
                     VStack(alignment: .leading) {
                         Text("Preview")
@@ -50,7 +89,8 @@ struct ThemeSelectorView: View {
                             AnimatedQuoteCard(
                                 quote: viewModel.quotes[viewModel.currentIndex],
                                 theme: viewModel.currentTheme,
-                                animationMode: viewModel.animationMode
+                                animationMode: viewModel.animationMode,
+                                speechViewModel: viewModel.speechViewModel
                             )
                             .id("preview-quote")
                         }

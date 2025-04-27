@@ -9,7 +9,11 @@ class QuoteViewModel: ObservableObject {
     @Published var currentTheme: Theme = Theme.presets[0]
     @Published var availableThemes: [Theme] = Theme.presets
     @Published var showThemeSelector: Bool = false
+    @Published var showVoiceSelector: Bool = false
     @Published var animationMode: AnimationMode = .fade
+    
+    // Добавляем модель для озвучивания
+    let speechViewModel = SpeechViewModel()
     
     enum AnimationMode: String, CaseIterable, Identifiable {
         case none = "None"
@@ -63,6 +67,19 @@ class QuoteViewModel: ObservableObject {
     func setAnimationMode(_ mode: AnimationMode) {
         self.animationMode = mode
         saveUserPreferences()
+    }
+    
+    // Метод для озвучивания текущей цитаты
+    func speakCurrentQuote() {
+        if !quotes.isEmpty {
+            let currentQuote = quotes[currentIndex]
+            speechViewModel.speakQuote(text: currentQuote.text, author: currentQuote.author)
+        }
+    }
+    
+    // Метод остановки озвучивания
+    func stopSpeaking() {
+        speechViewModel.stopSpeaking()
     }
 
     func loadQuotes() {
