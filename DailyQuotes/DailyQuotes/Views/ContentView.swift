@@ -12,17 +12,37 @@ struct ContentView: View {
                     QuoteCardView(quote: viewModel.quotes[viewModel.currentIndex])
                         .padding()
 
+                    if let error = viewModel.loadingError {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                            .onAppear {
+                                // Hides the error through 3 seconds, if the quotes are loaded
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                    // If the quotes are loaded, clears the error
+                                    if !viewModel.quotes.isEmpty {
+                                        viewModel.loadingError = nil
+                                    }
+                                }
+                            }
+                    }
+
                     HStack(spacing: 30) {
                         Button(action: viewModel.previousQuote) {
                             Image(systemName: "arrow.left.circle.fill")
                                 .font(.largeTitle)
                         }
+                        .disabled(viewModel.currentIndex == 0)
+                        
                         Button(action: {
                             viewModel.favoriteCurrentQuote()
                         }) {
                             Image(systemName: viewModel.isFavorite(viewModel.quotes[viewModel.currentIndex]) ? "heart.fill" : "heart")
                                 .font(.largeTitle)
                         }
+                        
                         Button(action: {
                             viewModel.nextQuote()
                             bgColor = Color.random()
@@ -30,6 +50,8 @@ struct ContentView: View {
                             Image(systemName: "arrow.right.circle.fill")
                                 .font(.largeTitle)
                         }
+                        .disabled(viewModel.currentIndex >= viewModel.quotes.count - 1)
+                        
                         Button(action: {
                             shareQuote(viewModel.quotes[viewModel.currentIndex])
                         }) {
@@ -41,6 +63,20 @@ struct ContentView: View {
                 } else {
                     Text("Loading quotes...")
                         .foregroundColor(.gray)
+                        .padding()
+                    
+                    if let error = viewModel.loadingError {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                    }
+                    
+                    Button("Reload") {
+                        viewModel.loadQuotes()
+                    }
+                    .padding()
                 }
 
                 Spacer()
@@ -54,13 +90,22 @@ struct ContentView: View {
             }
             .background(bgColor.ignoresSafeArea())
             .animation(.easeInOut, value: viewModel.currentIndex)
+            .onAppear {
+                // If the quotes are not loaded at the first launch, reload them
+                if viewModel.quotes.isEmpty {
+                    viewModel.loadQuotes()
+                }
+            }
         }
     }
 
     func shareQuote(_ quote: Quote) {
         let quoteText = "“\(quote.text)” — \(quote.author)"
         let av = UIActivityViewController(activityItems: [quoteText], applicationActivities: nil)
-        UIApplication.shared.windows.first?.rootViewController?.present(av, animated: true, completion: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(av, animated: true, completion: nil)
+        }
     }
 }
 
