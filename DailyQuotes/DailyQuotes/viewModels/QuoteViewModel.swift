@@ -6,12 +6,63 @@ class QuoteViewModel: ObservableObject {
     @Published var currentIndex: Int = 0
     @Published var favorites: [Quote] = []
     @Published var loadingError: String? = nil
+    @Published var currentTheme: Theme = Theme.presets[0]
+    @Published var availableThemes: [Theme] = Theme.presets
+    @Published var showThemeSelector: Bool = false
+    @Published var animationMode: AnimationMode = .fade
+    
+    enum AnimationMode: String, CaseIterable, Identifiable {
+        case none = "None"
+        case fade = "Fade"
+        case slide = "Slide"
+        case flip = "3D Flip"
+        case zoom = "Zoom"
+        
+        var id: String { self.rawValue }
+    }
 
     private let favoritesKey = "FavoriteQuotes"
+    private let themeKey = "SelectedTheme"
+    private let animationModeKey = "AnimationMode"
 
     init() {
         loadQuotes()
         loadFavorites()
+        loadUserPreferences()
+    }
+    
+    private func loadUserPreferences() {
+        // Загрузка сохраненной темы
+        if let data = UserDefaults.standard.data(forKey: themeKey),
+           let theme = try? JSONDecoder().decode(Theme.self, from: data) {
+            self.currentTheme = theme
+        }
+        
+        // Загрузка типа анимации
+        if let savedAnimationMode = UserDefaults.standard.string(forKey: animationModeKey),
+           let animMode = AnimationMode(rawValue: savedAnimationMode) {
+            self.animationMode = animMode
+        }
+    }
+    
+    func saveUserPreferences() {
+        // Сохранение выбранной темы
+        if let encoded = try? JSONEncoder().encode(currentTheme) {
+            UserDefaults.standard.set(encoded, forKey: themeKey)
+        }
+        
+        // Сохранение типа анимации
+        UserDefaults.standard.set(animationMode.rawValue, forKey: animationModeKey)
+    }
+    
+    func setTheme(_ theme: Theme) {
+        self.currentTheme = theme
+        saveUserPreferences()
+    }
+    
+    func setAnimationMode(_ mode: AnimationMode) {
+        self.animationMode = mode
+        saveUserPreferences()
     }
 
     func loadQuotes() {
@@ -67,6 +118,17 @@ class QuoteViewModel: ObservableObject {
     func previousQuote() {
         if currentIndex > 0 {
             currentIndex -= 1
+        }
+    }
+    
+    func randomQuote() {
+        if quotes.count > 1 {
+            var newIndex: Int
+            repeat {
+                newIndex = Int.random(in: 0..<quotes.count)
+            } while newIndex == currentIndex
+            
+            currentIndex = newIndex
         }
     }
 

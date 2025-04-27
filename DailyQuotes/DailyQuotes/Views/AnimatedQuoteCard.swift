@@ -1,0 +1,121 @@
+import SwiftUI
+
+struct AnimatedQuoteCard: View {
+    let quote: Quote
+    let theme: Theme
+    let animationMode: QuoteViewModel.AnimationMode
+    @State private var isAnimating = false
+    
+    // ID для отслеживания изменения цитаты
+    private let id = UUID()
+    
+    init(quote: Quote, theme: Theme, animationMode: QuoteViewModel.AnimationMode) {
+        self.quote = quote
+        self.theme = theme
+        self.animationMode = animationMode
+    }
+    
+    var body: some View {
+        VStack {
+            Text("\"\(quote.text)\"")
+                .font(.title2)
+                .bold()
+                .multilineTextAlignment(.center)
+                .padding()
+                .foregroundColor(theme.textColorValue)
+            
+            Text("- \(quote.author)")
+                .font(.subheadline)
+                .foregroundColor(theme.textColorValue.opacity(0.8))
+                .padding(.top, 5)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(theme.secondaryColorValue.opacity(0.9))
+                    .shadow(radius: 10)
+                
+                if let backgroundImage = theme.backgroundImage,
+                   let uiImage = UIImage(named: backgroundImage) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(0.3)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
+            }
+        )
+        .padding(.horizontal)
+        .modifier(AnimationModifier(mode: animationMode, isAnimating: isAnimating))
+        .onAppear {
+            withAnimation(.spring()) {
+                isAnimating = true
+            }
+        }
+        .id(quote.id) // Используем ID цитаты для идентификации
+        .onDisappear {
+            isAnimating = false
+        }
+        .onChange(of: quote.id) { _ in
+            // Сбрасываем анимацию при изменении цитаты
+            isAnimating = false
+            
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                isAnimating = true
+            }
+        }
+    }
+}
+
+struct AnimationModifier: ViewModifier {
+    let mode: QuoteViewModel.AnimationMode
+    let isAnimating: Bool
+    
+    func body(content: Content) -> some View {
+        switch mode {
+        case .none:
+            content
+            
+        case .fade:
+            content
+                .opacity(isAnimating ? 1 : 0)
+            
+        case .slide:
+            content
+                .offset(x: isAnimating ? 0 : -UIScreen.main.bounds.width)
+            
+        case .flip:
+            content
+                .rotation3DEffect(
+                    .degrees(isAnimating ? 0 : 180),
+                    axis: (x: 0, y: 1, z: 0)
+                )
+            
+        case .zoom:
+            content
+                .scaleEffect(isAnimating ? 1 : 0.5)
+                .opacity(isAnimating ? 1 : 0)
+        }
+    }
+}
+
+// Предварительный просмотр
+struct AnimatedQuoteCard_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack {
+            AnimatedQuoteCard(
+                quote: Quote(text: "The best way to get started is to quit talking and begin doing.", author: "Walt Disney"),
+                theme: Theme.presets[0],
+                animationMode: .fade
+            )
+            
+            AnimatedQuoteCard(
+                quote: Quote(text: "Success is not in what you have, but who you are.", author: "Bo Bennett"),
+                theme: Theme.presets[2],
+                animationMode: .slide
+            )
+        }
+    }
+}
