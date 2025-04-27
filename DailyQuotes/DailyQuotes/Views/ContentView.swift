@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var viewModel = QuoteViewModel()
     @State private var showFavorites = false
+    @State private var showImageGenerator = false
     
     var body: some View {
         NavigationView {
@@ -60,6 +61,17 @@ struct ContentView: View {
                                 viewModel.showVoiceSelector = true
                             }) {
                                 Image(systemName: "person.wave.2.fill")
+                                    .foregroundColor(.white)
+                                    .padding(12)
+                                    .background(viewModel.currentTheme.primaryColorValue.opacity(0.8))
+                                    .clipShape(Circle())
+                                    .shadow(radius: 3)
+                            }
+                            
+                            Button(action: {
+                                showImageGenerator = true
+                            }) {
+                                Image(systemName: "photo.on.rectangle.angled")
                                     .foregroundColor(.white)
                                     .padding(12)
                                     .background(viewModel.currentTheme.primaryColorValue.opacity(0.8))
@@ -157,6 +169,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $viewModel.showVoiceSelector) {
                 VoiceSelectionView(speechViewModel: viewModel.speechViewModel)
+            }
+            .sheet(isPresented: $showImageGenerator) {
+                QuoteImageGeneratorView(quoteViewModel: viewModel)
             }
             .onAppear {
                 // If the quotes are not loaded at the first launch, reload them

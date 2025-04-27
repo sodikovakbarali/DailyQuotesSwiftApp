@@ -23,7 +23,7 @@ struct Theme: Identifiable, Codable, Equatable {
     
     // Предустановленные темы
     static var presets: [Theme] = [
-        Theme(name: "Classic", primaryColor: "#FFFFFF", secondaryColor: "#F0F0F0", textColor: "#000000", backgroundImage: nil),
+//        Theme(name: "Classic", primaryColor: "#FFFFFF", secondaryColor: "#F0F0F0", textColor: "#000000", backgroundImage: nil),
         Theme(name: "Dark", primaryColor: "#212121", secondaryColor: "#424242", textColor: "#FFFFFF", backgroundImage: nil),
         Theme(name: "Ocean", primaryColor: "#1976D2", secondaryColor: "#64B5F6", textColor: "#FFFFFF", backgroundImage: "ocean"),
         Theme(name: "Sunset", primaryColor: "#FF9800", secondaryColor: "#FFCC80", textColor: "#212121", backgroundImage: "sunset"),
