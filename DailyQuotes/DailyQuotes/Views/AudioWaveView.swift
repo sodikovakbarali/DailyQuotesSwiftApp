@@ -8,7 +8,7 @@ struct AudioWaveView: View {
     let minBarHeight: CGFloat
     var color: Color
     
-    // Геренирует случайные начальные высоты для баров
+    // Generates random initial heights for bars
     private var initialHeights: [CGFloat] {
         (0..<barCount).map { _ in CGFloat.random(in: 0.1...0.6) }
     }
@@ -69,12 +69,12 @@ struct AudioBar: View {
             return minBarHeight
         }
         
-        // Создаем эффект волны между соседними барами
+        // Creates a wave effect between adjacent bars
         let midPoint = CGFloat(barCount) / 2.0
         let distanceFromMid = abs(CGFloat(index) - midPoint)
         let variance = max(0, 1.0 - distanceFromMid / midPoint)
         
-        // Добавляем случайность для реалистичного отображения звуковой волны
+        // Adds randomness for a more realistic sound wave display
         let randomness = CGFloat.random(in: -0.1...0.1)
         
         return max(
@@ -91,7 +91,7 @@ struct AudioBar: View {
     }
 }
 
-// Предварительный просмотр
+// Preview
 struct AudioWaveView_Previews: PreviewProvider {
     @State static var audioLevel: CGFloat = 0.7
     

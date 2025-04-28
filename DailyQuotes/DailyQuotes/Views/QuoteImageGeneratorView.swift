@@ -4,6 +4,9 @@ struct QuoteImageGeneratorView: View {
     @ObservedObject var quoteViewModel: QuoteViewModel
     @StateObject private var imageGenerator = ImageGeneratorViewModel()
     @Environment(\.presentationMode) var presentationMode
+    @State private var showSaveAlert = false
+    @State private var saveAlertMessage = ""
+    @State private var saveAlertTitle = ""
     
     var body: some View {
         NavigationView {
@@ -66,6 +69,31 @@ struct QuoteImageGeneratorView: View {
             .sheet(isPresented: $imageGenerator.showShareSheet) {
                 if let url = imageGenerator.getImageURL() {
                     ShareSheet(items: [url])
+                }
+            }
+            .alert(isPresented: $showSaveAlert) {
+                Alert(
+                    title: Text(saveAlertTitle),
+                    message: Text(saveAlertMessage),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
+            .onChange(of: imageGenerator.saveResult) { oldValue, newValue in
+                if let result = newValue {
+                    switch result {
+                    case .success:
+                        saveAlertTitle = "Success"
+                        saveAlertMessage = "Image saved to your photo library"
+                        showSaveAlert = true
+                    case .error(let message):
+                        saveAlertTitle = "Error"
+                        saveAlertMessage = message
+                        showSaveAlert = true
+                    }
+                    // Reset after showing
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        imageGenerator.saveResult = nil
+                    }
                 }
             }
         }
@@ -218,7 +246,7 @@ struct StyleCard: View {
     }
 }
 
-// Вспомогательное представление для шаринга
+// Helper view for sharing
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
     
@@ -233,7 +261,7 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
-// Предварительный просмотр
+// Preview
 struct QuoteImageGeneratorView_Previews: PreviewProvider {
     static var previews: some View {
         QuoteImageGeneratorView(quoteViewModel: QuoteViewModel())

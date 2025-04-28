@@ -8,7 +8,6 @@ struct Theme: Identifiable, Codable, Equatable {
     let textColor: String
     let backgroundImage: String?
     
-    // Преобразование строковых значений в Color
     var primaryColorValue: Color {
         Color(hex: primaryColor) ?? .blue
     }
@@ -21,7 +20,6 @@ struct Theme: Identifiable, Codable, Equatable {
         Color(hex: textColor) ?? .black
     }
     
-    // Предустановленные темы
     static var presets: [Theme] = [
 //        Theme(name: "Classic", primaryColor: "#FFFFFF", secondaryColor: "#F0F0F0", textColor: "#000000", backgroundImage: nil),
         Theme(name: "Dark", primaryColor: "#212121", secondaryColor: "#424242", textColor: "#FFFFFF", backgroundImage: nil),
@@ -31,7 +29,6 @@ struct Theme: Identifiable, Codable, Equatable {
     ]
 }
 
-// Расширение для преобразования HEX-кодов в Color
 extension Color {
     init?(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)

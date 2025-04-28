@@ -7,7 +7,7 @@ struct AnimatedQuoteCard: View {
     let speechViewModel: SpeechViewModel
     @State private var isAnimating = false
     
-    // ID для отслеживания изменения цитаты
+    // ID for tracking quote changes
     private let id = UUID()
     
     init(quote: Quote, theme: Theme, animationMode: QuoteViewModel.AnimationMode, speechViewModel: SpeechViewModel) {
@@ -31,7 +31,7 @@ struct AnimatedQuoteCard: View {
                 .foregroundColor(theme.textColorValue.opacity(0.8))
                 .padding(.top, 5)
             
-            // Добавляем AudioWaveView когда цитата озвучивается
+            // Add AudioWaveView when the quote is being spoken
             if speechViewModel.isSpeaking {
                 AudioWaveView(
                     audioLevel: Binding<CGFloat>(
@@ -72,12 +72,12 @@ struct AnimatedQuoteCard: View {
                 isAnimating = true
             }
         }
-        .id(quote.id) // Используем ID цитаты для идентификации
+        .id(quote.id) // Use the quote ID for identification
         .onDisappear {
             isAnimating = false
         }
         .onChange(of: quote.id) { _ in
-            // Сбрасываем анимацию при изменении цитаты
+            // Reset the animation when the quote changes
             isAnimating = false
             
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -120,7 +120,7 @@ struct AnimationModifier: ViewModifier {
     }
 }
 
-// Предварительный просмотр
+// Preview
 struct AnimatedQuoteCard_Previews: PreviewProvider {
     static var previews: some View {
         VStack {

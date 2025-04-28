@@ -17,7 +17,7 @@ class SpeechViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
         speechSynthesizer.delegate = self
         loadAvailableVoices()
         
-        // Выбираем голос по умолчанию
+        // Select default voice
         if let defaultVoice = availableVoices.first {
             currentVoiceIdentifier = defaultVoice.identifier
         }
@@ -28,7 +28,6 @@ class SpeechViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
         audioLevelTimer?.invalidate()
     }
     
-    // MARK: - AVSpeechSynthesizerDelegate
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         DispatchQueue.main.async {
@@ -51,12 +50,10 @@ class SpeechViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
         }
     }
     
-    // MARK: - Public Methods
-    
     func loadAvailableVoices() {
         let voices = AVSpeechSynthesisVoice.speechVoices()
         
-        // Фильтруем голоса - берем только английские и русские голоса высокого качества
+        // Filter voices - use only English and Russian high-quality voices
         availableVoices = voices
             .filter { voice in
                 let language = voice.language
@@ -80,12 +77,12 @@ class SpeechViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     }
     
     func speakQuote(text: String, author: String) {
-        // Останавливаем предыдущую речь, если есть
+        // Stop previous speech if any
         if isSpeaking {
             stopSpeaking()
         }
         
-        // Создаем полный текст для озвучивания
+        // Create full text for speech
         let fullText = "\(text), by \(author)"
         
         let utterance = AVSpeechUtterance(string: fullText)
@@ -93,12 +90,12 @@ class SpeechViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
         utterance.pitchMultiplier = 1.0
         utterance.volume = 1.0
         
-        // Если выбран конкретный голос, используем его
+        // If a specific voice is selected, use it
         if let voiceIdentifier = currentVoiceIdentifier,
            let voice = AVSpeechSynthesisVoice(identifier: voiceIdentifier) {
             utterance.voice = voice
         } else if let voice = AVSpeechSynthesisVoice(language: "en-US") {
-            // Иначе используем голос по умолчанию для английского
+            // Otherwise use default voice for English
             utterance.voice = voice
         }
         
@@ -113,9 +110,7 @@ class SpeechViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
         self.currentVoiceIdentifier = identifier
     }
     
-    // MARK: - Private Methods
-    
-    // Анимация уровня звука для визуального эффекта
+    // Audio level animation for visual effect
     private func startAudioLevelAnimation() {
         audioLevelTimer?.invalidate()
         
@@ -133,7 +128,7 @@ class SpeechViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     }
 }
 
-// Модель голоса для пользовательского интерфейса
+// Voice model for user interface
 struct Voice: Identifiable {
     var id: String { identifier }
     let identifier: String

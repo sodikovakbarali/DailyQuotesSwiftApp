@@ -5,15 +5,14 @@ struct FavoritesView: View {
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        // Разбил выражение на более мелкие части для устранения проблемы с компилятором
         favoriteNavigationView
     }
     
-    // Выделенное основное представление навигации
+    // Selected main navigation view
     private var favoriteNavigationView: some View {
         NavigationView {
             ZStack {
-                // Фоновый вид с учетом темы
+                // Background view with theme consideration
                 viewModel.currentTheme.primaryColorValue
                     .opacity(0.2)
                     .ignoresSafeArea()
@@ -27,7 +26,7 @@ struct FavoritesView: View {
         }
     }
     
-    // Выделенное содержимое - либо пустое состояние, либо список цитат
+    // Selected content - either empty state, or list of quotes
     private var favoriteContentView: some View {
         Group {
             if viewModel.favorites.isEmpty {
@@ -38,7 +37,7 @@ struct FavoritesView: View {
         }
     }
     
-    // Представление для случая, когда нет избранных цитат
+    // View for the case when there are no favorite quotes
     private var emptyStateView: some View {
         VStack {
             Image(systemName: "heart.slash")
@@ -52,7 +51,7 @@ struct FavoritesView: View {
         }
     }
     
-    // Список избранных цитат
+    // List of favorite quotes
     private var favoriteListView: some View {
         List {
             ForEach(viewModel.favorites) { quote in

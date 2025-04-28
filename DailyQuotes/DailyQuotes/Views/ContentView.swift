@@ -207,7 +207,7 @@ struct ContentView: View {
     }
     
     func shareQuote(_ quote: Quote) {
-        let quoteText = ""\(quote.text)" — \(quote.author)"
+        let quoteText = "\"\(quote.text)\" - \(quote.author)"
         let av = UIActivityViewController(activityItems: [quoteText], applicationActivities: nil)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootVC = windowScene.windows.first?.rootViewController {

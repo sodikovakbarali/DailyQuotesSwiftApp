@@ -17,10 +17,10 @@ struct VoiceSelectionView: View {
                             .foregroundColor(.gray)
                             .padding()
                     } else {
-                        // Сначала выводим английские голоса
+                        // First display English voices
                         voiceList(for: "en")
                         
-                        // Затем русские голоса, если они доступны
+                        // Then display Russian voices if they are available
                         voiceList(for: "ru")
                     }
                 }
@@ -38,7 +38,7 @@ struct VoiceSelectionView: View {
         let filteredVoices = speechViewModel.availableVoices.filter { $0.language.hasPrefix(languagePrefix) }
         
         if !filteredVoices.isEmpty {
-            // Заголовок с названием языка
+            // Language name header
             Text(languagePrefix == "en" ? "English" : "Russian")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -66,7 +66,7 @@ struct VoiceRow: View {
     var body: some View {
         Button(action: action) {
             HStack {
-                // Иконка голоса
+                // Voice icon
                 Image(systemName: voice.gender == .male ? "person.circle.fill" : "person.circle")
                     .font(.title2)
                     .foregroundColor(voice.gender == .male ? .blue : .purple)
@@ -97,7 +97,7 @@ struct VoiceRow: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    // Форматирует код языка в более читаемый формат
+    // Formats the language code in a more readable format
     private func formatLanguage(_ language: String) -> String {
         if language.hasPrefix("en") {
             return "English (\(language))"

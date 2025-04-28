@@ -3,6 +3,7 @@ import SwiftUI
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import UniformTypeIdentifiers
+import Photos
 
 class ImageGeneratorViewModel: ObservableObject {
     @Published var generatedImage: UIImage?
@@ -10,6 +11,23 @@ class ImageGeneratorViewModel: ObservableObject {
     @Published var selectedStyle: QuoteImageStyle = .modern
     @Published var showCustomization = false
     @Published var showShareSheet = false
+    @Published var saveResult: SaveResult?
+    
+    enum SaveResult: Equatable {
+        case success
+        case error(String)
+        
+        static func == (lhs: SaveResult, rhs: SaveResult) -> Bool {
+            switch (lhs, rhs) {
+            case (.success, .success):
+                return true
+            case (.error(let lhsMsg), .error(let rhsMsg)):
+                return lhsMsg == rhsMsg
+            default:
+                return false
+            }
+        }
+    }
     
     enum QuoteImageStyle: String, CaseIterable, Identifiable {
         case modern = "Modern"
@@ -71,33 +89,33 @@ class ImageGeneratorViewModel: ObservableObject {
         }
     }
     
-    // Генерирует изображение цитаты
+    // Generates a quote image
     func generateQuoteImage(quote: Quote, theme: Theme) {
         isGenerating = true
         
-        // Обработка в фоне для избежания лагов UI
+        // Processing in background to avoid UI lag
         DispatchQueue.global(qos: .userInitiated).async {
-            // Создаем изображение нужного размера
+            // Create image with needed size
             let width: CGFloat = 1200
             let height: CGFloat = 1200
             let imageSize = CGSize(width: width, height: height)
             
             let renderer = UIGraphicsImageRenderer(size: imageSize)
             let generatedImage = renderer.image { (context) in
-                // Заливка фоном
+                // Background fill
                 self.drawBackground(for: self.selectedStyle, in: context, size: imageSize)
                 
-                // Добавляем текст цитаты
+                // Add quote text
                 self.drawQuoteText(quote: quote, context: context, size: imageSize)
                 
-                // Добавляем декоративные элементы
+                // Add decorative elements
                 self.drawDecorations(for: self.selectedStyle, in: context, size: imageSize)
                 
-                // Добавляем эффекты фильтра
+                // Apply filter effects
                 self.applyFilters(context: context)
             }
             
-            // Переключаемся обратно на главный поток для обновления UI
+            // Switch back to main thread for UI updates
             DispatchQueue.main.async {
                 self.generatedImage = generatedImage
                 self.isGenerating = false
@@ -106,11 +124,11 @@ class ImageGeneratorViewModel: ObservableObject {
     }
     
     private func drawBackground(for style: QuoteImageStyle, in context: UIGraphicsImageRendererContext, size: CGSize) {
-        // Попытка загрузки предустановленного фона
+        // Try to load predefined background
         if let backgroundImage = UIImage(named: style.backgroundName) {
             backgroundImage.draw(in: CGRect(origin: .zero, size: size))
         } else {
-            // Резервный вариант - градиентный фон
+            // Fallback option - gradient background
             let context = context.cgContext
             let colors: [CGColor]
             
@@ -132,11 +150,11 @@ class ImageGeneratorViewModel: ObservableObject {
                           UIColor(red: 0.3, green: 0.2, blue: 0.5, alpha: 1.0).cgColor]
             }
             
-            // Создание градиента
+            // Create gradient
             let colorSpace = CGColorSpaceCreateDeviceRGB()
             let gradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: [0.0, 1.0])!
             
-            // Рисуем градиент
+            // Draw gradient
             context.drawLinearGradient(
                 gradient,
                 start: CGPoint(x: 0, y: 0),
@@ -144,7 +162,7 @@ class ImageGeneratorViewModel: ObservableObject {
                 options: []
             )
             
-            // Добавляем полупрозрачное наложение для контраста с текстом
+            // Add semi-transparent overlay for contrast with text
             context.setFillColor(UIColor.black.withAlphaComponent(style.overlayOpacity).cgColor)
             context.fill(CGRect(origin: .zero, size: size))
         }
@@ -153,32 +171,32 @@ class ImageGeneratorViewModel: ObservableObject {
     private func drawQuoteText(quote: Quote, context: UIGraphicsImageRendererContext, size: CGSize) {
         let style = self.selectedStyle
         
-        // Параметры текста
+        // Text parameters
         let textColor = style.textColor
         let quoteFont = UIFont(name: style.fontName, size: 50) ?? UIFont.systemFont(ofSize: 50, weight: .bold)
         let authorFont = UIFont(name: style.authorFontName, size: 30) ?? UIFont.italicSystemFont(ofSize: 30)
         
-        // Добавляем кавычки к тексту
+        // Add quotes to text
         let displayText = "\"\(quote.text)\""
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = .center
         paragraphStyle.lineSpacing = 10
         
-        // Атрибуты для текста цитаты
+        // Attributes for quote text
         let quoteAttributes: [NSAttributedString.Key: Any] = [
             .font: quoteFont,
             .foregroundColor: textColor,
             .paragraphStyle: paragraphStyle
         ]
         
-        // Атрибуты для автора
+        // Attributes for author
         let authorAttributes: [NSAttributedString.Key: Any] = [
             .font: authorFont,
             .foregroundColor: textColor,
             .paragraphStyle: paragraphStyle
         ]
         
-        // Рассчитываем размеры для центрирования текста
+        // Calculate sizes for text centering
         let textRect = CGRect(x: 100, y: 0, width: size.width - 200, height: size.height)
         let textSize = (displayText as NSString).boundingRect(
             with: CGSize(width: textRect.width, height: .greatestFiniteMagnitude),
@@ -187,7 +205,7 @@ class ImageGeneratorViewModel: ObservableObject {
             context: nil
         )
         
-        // Рисуем текст цитаты
+        // Draw quote text
         let quoteCenteredRect = CGRect(
             x: textRect.origin.x,
             y: (size.height - textSize.height - 80) / 2,
@@ -196,7 +214,7 @@ class ImageGeneratorViewModel: ObservableObject {
         )
         (displayText as NSString).draw(in: quoteCenteredRect, withAttributes: quoteAttributes)
         
-        // Рисуем имя автора
+        // Draw author name
         let authorText = "- \(quote.author)"
         let authorTextSize = (authorText as NSString).boundingRect(
             with: CGSize(width: textRect.width, height: .greatestFiniteMagnitude),
@@ -219,7 +237,7 @@ class ImageGeneratorViewModel: ObservableObject {
         
         switch style {
         case .modern:
-            // Современные декоративные линии
+            // Modern decorative lines
             cgContext.setStrokeColor(UIColor.white.withAlphaComponent(0.5).cgColor)
             cgContext.setLineWidth(4)
             cgContext.move(to: CGPoint(x: 80, y: 80))
@@ -231,31 +249,31 @@ class ImageGeneratorViewModel: ObservableObject {
             cgContext.strokePath()
             
         case .vintage:
-            // Винтажная рамка
+            // Vintage frame
             let borderWidth: CGFloat = 40
             let borderRect = CGRect(x: borderWidth, y: borderWidth, width: size.width - borderWidth * 2, height: size.height - borderWidth * 2)
             cgContext.setStrokeColor(UIColor(red: 0.8, green: 0.7, blue: 0.6, alpha: 0.8).cgColor)
             cgContext.setLineWidth(3)
             cgContext.stroke(borderRect)
             
-            // Дополнительная внутренняя рамка
+            // Additional inner frame
             let innerBorderRect = CGRect(x: borderWidth + 15, y: borderWidth + 15, width: size.width - (borderWidth + 15) * 2, height: size.height - (borderWidth + 15) * 2)
             cgContext.setLineWidth(1)
             cgContext.stroke(innerBorderRect)
             
         case .nature:
-            // Природные орнаменты - стилизованные листья в углах
+            // Nature ornaments - stylized leaves in corners
             drawLeafInCorner(context: cgContext, center: CGPoint(x: 120, y: 120), size: 80, rotation: 0)
             drawLeafInCorner(context: cgContext, center: CGPoint(x: size.width - 120, y: 120), size: 80, rotation: .pi/2)
             drawLeafInCorner(context: cgContext, center: CGPoint(x: 120, y: size.height - 120), size: 80, rotation: -.pi/2)
             drawLeafInCorner(context: cgContext, center: CGPoint(x: size.width - 120, y: size.height - 120), size: 80, rotation: .pi)
             
         case .minimal:
-            // Минималистичные декоративные элементы - тонкие линии
+            // Minimalist decorative elements - thin lines
             cgContext.setStrokeColor(UIColor.black.withAlphaComponent(0.2).cgColor)
             cgContext.setLineWidth(1)
             
-            // Горизонтальные линии сверху и снизу
+            // Horizontal lines at top and bottom
             let margin: CGFloat = 150
             cgContext.move(to: CGPoint(x: margin, y: margin))
             cgContext.addLine(to: CGPoint(x: size.width - margin, y: margin))
@@ -266,14 +284,14 @@ class ImageGeneratorViewModel: ObservableObject {
             cgContext.strokePath()
             
         case .gradient:
-            // Добавляем стилизованные кавычки
+            // Add stylized quote marks
             let quoteSize: CGFloat = 120
             let quoteColor = UIColor.white.withAlphaComponent(0.3)
             
-            // Левая кавычка
+            // Left quote
             drawQuoteMark(context: cgContext, position: CGPoint(x: 120, y: 250), size: quoteSize, color: quoteColor, isOpening: true)
             
-            // Правая кавычка
+            // Right quote
             drawQuoteMark(context: cgContext, position: CGPoint(x: size.width - 120, y: size.height - 250), size: quoteSize, color: quoteColor, isOpening: false)
         }
     }
@@ -313,7 +331,7 @@ class ImageGeneratorViewModel: ObservableObject {
         let quotePath = UIBezierPath()
         let quarterSize = size / 4
         
-        // Первая кавычка
+        // First quote
         quotePath.move(to: CGPoint(x: 0, y: 0))
         quotePath.addCurve(to: CGPoint(x: quarterSize, y: -quarterSize),
                            controlPoint1: CGPoint(x: 0, y: -quarterSize/2),
@@ -327,7 +345,7 @@ class ImageGeneratorViewModel: ObservableObject {
                            controlPoint2: CGPoint(x: -quarterSize, y: -size/8))
         quotePath.close()
         
-        // Вторая кавычка (смещена вправо)
+        // Second quote (shifted to the right)
         quotePath.move(to: CGPoint(x: size/2, y: 0))
         quotePath.addCurve(to: CGPoint(x: size/2 + quarterSize, y: -quarterSize),
                            controlPoint1: CGPoint(x: size/2, y: -quarterSize/2),
@@ -348,27 +366,28 @@ class ImageGeneratorViewModel: ObservableObject {
     }
     
     private func applyFilters(context: UIGraphicsImageRendererContext) {
-        // Применение эффектов фильтра будет зависеть от стиля
-        // В этой реализации фильтры применяются непосредственно к контексту рисования
-        // Это упрощенный вариант, так как применение CIFilter напрямую к контексту сложнее
+        // The application of filter effects will depend on the style
+        // This implementation applies filters directly to the drawing context
+        // This is a simplified version, as applying CIFilter directly to the context is more complex
     }
     
-    // Сохраняет изображение в фотопленку
+    // Saves image to photo library with permission check
     func saveImageToPhotoLibrary() {
         guard let image = generatedImage else { return }
         
+        // Direct save using UIImageWriteToSavedPhotosAlbum
         UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
     }
     
     @objc func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
         if let error = error {
-            print("Error saving image: \(error.localizedDescription)")
+            self.saveResult = .error("Error saving image: \(error.localizedDescription)")
         } else {
-            print("Image saved successfully")
+            self.saveResult = .success
         }
     }
     
-    // Создает временный URL для шаринга изображения
+    // Creates a temporary URL for sharing the image
     func getImageURL() -> URL? {
         guard let image = generatedImage, let data = image.jpegData(compressionQuality: 0.8) else {
             return nil
@@ -387,8 +406,8 @@ class ImageGeneratorViewModel: ObservableObject {
         }
     }
     
-    // Настраивает генератор изображений
+    // Sets up the image generator
     func setupGenerator() {
-        // Можно будет добавить дополнительные настройки инициализации
+        // Additional initialization settings can be added here
     }
 } 

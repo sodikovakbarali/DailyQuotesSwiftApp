@@ -8,7 +8,7 @@ struct ThemeSelectorView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Выбор темы
+                    // Theme selection
                     VStack(alignment: .leading) {
                         Text("Choose Theme")
                             .font(.headline)
@@ -25,7 +25,7 @@ struct ThemeSelectorView: View {
                     
                     Divider()
                     
-                    // Выбор анимации
+                    // Animation selection
                     VStack(alignment: .leading) {
                         Text("Choose Animation")
                             .font(.headline)
@@ -42,16 +42,16 @@ struct ThemeSelectorView: View {
                     
                     Divider()
                     
-                    // Голосовые настройки
+                    // Voice settings
                     VStack(alignment: .leading) {
                         Text("Voice Settings")
                             .font(.headline)
                             .padding(.horizontal)
                         
                         Button(action: {
-                            // Закрываем текущее окно
+                            // Close the current window
                             presentationMode.wrappedValue.dismiss()
-                            // Небольшая задержка перед открытием нового окна
+                            // Small delay before opening the new window
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 viewModel.showVoiceSelector = true
                             }
@@ -79,7 +79,7 @@ struct ThemeSelectorView: View {
                     }
                     .padding(.vertical)
                     
-                    // Предпросмотр
+                    // Preview
                     VStack(alignment: .leading) {
                         Text("Preview")
                             .font(.headline)
@@ -113,7 +113,7 @@ struct ThemeRow: View {
     
     var body: some View {
         HStack {
-            // Цветовые кружки
+            // Color circles
             HStack(spacing: 8) {
                 Circle()
                     .fill(theme.primaryColorValue)
@@ -153,7 +153,7 @@ struct AnimationRow: View {
     
     var body: some View {
         HStack {
-            // Иконка анимации
+            // Animation icon
             Image(systemName: iconForMode(mode))
                 .font(.title2)
             

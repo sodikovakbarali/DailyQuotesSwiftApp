@@ -12,7 +12,7 @@ class QuoteViewModel: ObservableObject {
     @Published var showVoiceSelector: Bool = false
     @Published var animationMode: AnimationMode = .fade
     
-    // Добавляем модель для озвучивания
+    // Model for speech
     let speechViewModel = SpeechViewModel()
     
     enum AnimationMode: String, CaseIterable, Identifiable {
@@ -36,13 +36,13 @@ class QuoteViewModel: ObservableObject {
     }
     
     private func loadUserPreferences() {
-        // Загрузка сохраненной темы
+        // Loading saved theme
         if let data = UserDefaults.standard.data(forKey: themeKey),
            let theme = try? JSONDecoder().decode(Theme.self, from: data) {
             self.currentTheme = theme
         }
         
-        // Загрузка типа анимации
+        // Loading animation type
         if let savedAnimationMode = UserDefaults.standard.string(forKey: animationModeKey),
            let animMode = AnimationMode(rawValue: savedAnimationMode) {
             self.animationMode = animMode
@@ -50,12 +50,12 @@ class QuoteViewModel: ObservableObject {
     }
     
     func saveUserPreferences() {
-        // Сохранение выбранной темы
+        // Saving selected theme
         if let encoded = try? JSONEncoder().encode(currentTheme) {
             UserDefaults.standard.set(encoded, forKey: themeKey)
         }
         
-        // Сохранение типа анимации
+        // Saving animation type
         UserDefaults.standard.set(animationMode.rawValue, forKey: animationModeKey)
     }
     
@@ -69,7 +69,7 @@ class QuoteViewModel: ObservableObject {
         saveUserPreferences()
     }
     
-    // Метод для озвучивания текущей цитаты
+    // Method for speaking the current quote
     func speakCurrentQuote() {
         if !quotes.isEmpty {
             let currentQuote = quotes[currentIndex]
@@ -77,7 +77,7 @@ class QuoteViewModel: ObservableObject {
         }
     }
     
-    // Метод остановки озвучивания
+    // Method for stopping speech
     func stopSpeaking() {
         speechViewModel.stopSpeaking()
     }
