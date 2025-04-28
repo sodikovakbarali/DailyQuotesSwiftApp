@@ -8,7 +8,7 @@ struct QuoteImageGeneratorView: View {
     var body: some View {
         NavigationView {
             VStack {
-                // Верхняя часть - предпросмотр изображения
+                // Top section - image preview
                 ZStack {
                     if let generatedImage = imageGenerator.generatedImage {
                         Image(uiImage: generatedImage)
@@ -45,13 +45,13 @@ struct QuoteImageGeneratorView: View {
                     }
                 }
                 
-                // Нижняя часть - настройки и кнопки
+                // Bottom section - settings and buttons
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Выбор стиля
+                        // Style selection
                         styleSelector
                         
-                        // Кнопки генерации и действий
+                        // Generation and action buttons
                         actionButtons
                     }
                     .padding()
@@ -84,7 +84,7 @@ struct QuoteImageGeneratorView: View {
                             .onTapGesture {
                                 imageGenerator.selectedStyle = style
                                 if imageGenerator.generatedImage != nil {
-                                    // Регенерировать изображение при смене стиля
+                                    // Regenerate image when style changes
                                     generateImage()
                                 }
                             }
@@ -97,7 +97,7 @@ struct QuoteImageGeneratorView: View {
     
     private var actionButtons: some View {
         VStack(spacing: 16) {
-            // Кнопка генерации
+            // Generate button
             Button(action: generateImage) {
                 HStack {
                     Image(systemName: "wand.and.stars")
@@ -114,7 +114,7 @@ struct QuoteImageGeneratorView: View {
             
             if imageGenerator.generatedImage != nil {
                 HStack(spacing: 15) {
-                    // Кнопка сохранения
+                    // Save button
                     Button(action: {
                         imageGenerator.saveImageToPhotoLibrary()
                     }) {
@@ -129,7 +129,7 @@ struct QuoteImageGeneratorView: View {
                         .cornerRadius(12)
                     }
                     
-                    // Кнопка шаринга
+                    // Share button
                     Button(action: {
                         imageGenerator.showShareSheet = true
                     }) {

@@ -8,19 +8,19 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Фоновый градиент или изображение
+                // Background gradient or image
                 backgroundView
                 
                 VStack {
                     if !viewModel.quotes.isEmpty {
-                        // Анимированная карточка цитаты
+                        // Animated quote card
                         AnimatedQuoteCard(
                             quote: viewModel.quotes[viewModel.currentIndex],
                             theme: viewModel.currentTheme,
                             animationMode: viewModel.animationMode,
                             speechViewModel: viewModel.speechViewModel
                         )
-                        // Используем сам индекс для идентификации вместо ID цитаты
+                        // Using the index itself for identification instead of the quote ID
                         .id("quote-\(viewModel.currentIndex)")
                         
                         if let error = viewModel.loadingError {
@@ -40,7 +40,7 @@ struct ContentView: View {
                                 }
                         }
                         
-                        // Элементы управления для озвучивания
+                        // Speech control elements
                         HStack(spacing: 10) {
                             Button(action: {
                                 if viewModel.speechViewModel.isSpeaking {
@@ -81,9 +81,9 @@ struct ContentView: View {
                         }
                         .padding(.top, 10)
                         
-                        // Элементы управления
+                        // Control elements
                         HStack(spacing: 20) {
-                            // Кнопка предыдущей цитаты
+                            // Previous quote button
                             Button(action: viewModel.previousQuote) {
                                 Image(systemName: "arrow.left.circle.fill")
                                     .font(.largeTitle)
@@ -91,14 +91,14 @@ struct ContentView: View {
                             }
                             .disabled(viewModel.currentIndex == 0)
                             
-                            // Кнопка случайной цитаты
+                            // Random quote button
                             Button(action: viewModel.randomQuote) {
                                 Image(systemName: "shuffle.circle.fill")
                                     .font(.largeTitle)
                                     .foregroundColor(viewModel.currentTheme.primaryColorValue)
                             }
                             
-                            // Кнопка добавления в избранное
+                            // Add to favorites button
                             Button(action: {
                                 viewModel.favoriteCurrentQuote()
                             }) {
@@ -107,7 +107,7 @@ struct ContentView: View {
                                     .foregroundColor(viewModel.isFavorite(viewModel.quotes[viewModel.currentIndex]) ? .red : viewModel.currentTheme.primaryColorValue)
                             }
                             
-                            // Кнопка следующей цитаты
+                            // Next quote button
                             Button(action: {
                                 viewModel.nextQuote()
                             }) {
@@ -117,7 +117,7 @@ struct ContentView: View {
                             }
                             .disabled(viewModel.currentIndex >= viewModel.quotes.count - 1)
                             
-                            // Кнопка шаринга
+                            // Share button
                             Button(action: {
                                 shareQuote(viewModel.quotes[viewModel.currentIndex])
                             }) {
@@ -180,21 +180,21 @@ struct ContentView: View {
                 }
             }
             .onDisappear {
-                // Останавливаем озвучивание при закрытии экрана
+                // Stop speech when closing the screen
                 viewModel.stopSpeaking()
             }
         }
     }
     
-    // Создаем фоновое представление в зависимости от выбранной темы
+    // Create background view depending on the selected theme
     var backgroundView: some View {
         ZStack {
-            // Основной цвет
+            // Main color
             viewModel.currentTheme.primaryColorValue
                 .opacity(0.2)
                 .ignoresSafeArea()
             
-            // Фоновое изображение, если есть
+            // Background image, if available
             if let backgroundImage = viewModel.currentTheme.backgroundImage,
                let uiImage = UIImage(named: backgroundImage) {
                 Image(uiImage: uiImage)
@@ -207,7 +207,7 @@ struct ContentView: View {
     }
     
     func shareQuote(_ quote: Quote) {
-        let quoteText = "“\(quote.text)” — \(quote.author)"
+        let quoteText = ""\(quote.text)" — \(quote.author)"
         let av = UIActivityViewController(activityItems: [quoteText], applicationActivities: nil)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootVC = windowScene.windows.first?.rootViewController {
